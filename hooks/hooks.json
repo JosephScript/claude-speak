@@ -1,5 +1,5 @@
 {
-  "description": "Speaks each response automatically via macOS `say` when toggle-speak is enabled (see /toggle-speak).",
+  "description": "Speaks each response automatically via the platform speech engine when toggle-speak is enabled (see /toggle-speak).",
   "hooks": {
     "Stop": [
       {

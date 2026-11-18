@@ -6,20 +6,20 @@
     "email": "hi@josephscript.com"
   },
   "metadata": {
-    "description": "Give Claude a voice on macOS or Linux — on-demand and automatic speech output, adjustable rate/voice/truncation.",
+    "description": "Give Claude a voice on macOS, Linux or Windows — on-demand and automatic speech output, adjustable rate/voice/truncation.",
     "version": "1.0.0"
   },
   "plugins": [
     {
       "name": "claude-speak",
       "source": "./",
-      "description": "Give Claude a voice on macOS (`say`) or Linux (`espeak-ng`) — on-demand /speak (verbatim or LLM-summarized), an automatic toggle-speak Stop hook, and adjustable rate/voice/truncation.",
+      "description": "Give Claude a voice on macOS (`say`), Linux (`espeak-ng`) or Windows (SAPI) — on-demand /speak (verbatim or LLM-summarized), an automatic toggle-speak Stop hook, and adjustable rate/voice/truncation.",
       "version": "1.1.0",
       "author": {
         "name": "JosephScript",
         "email": "hi@josephscript.com"
       },
-      "keywords": ["voice", "tts", "accessibility", "macos", "linux", "espeak", "say"],
+      "keywords": ["voice", "tts", "accessibility", "macos", "linux", "windows", "espeak", "say", "sapi"],
       "category": "productivity",
       "homepage": "https://github.com/JosephScript/claude-speak"
     }

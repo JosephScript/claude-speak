@@ -43,8 +43,17 @@ case "$backend" in
     [ -n "$voice" ] && args+=(-v "$voice")
     "$espeak_bin" "${args[@]}" "$text" >/dev/null 2>&1 &
     ;;
+  windows)
+    # Text goes through a temp file (UTF-8 safe, no quoting); the PowerShell
+    # helper reads it and deletes it. Rate is words per minute, mapped to
+    # SAPI's -10..10 scale there.
+    tmp="$(mktemp)"
+    printf '%s' "$text" > "$tmp"
+    CS_TEXT_FILE="$(cygpath -w "$tmp")" CS_RATE="$rate" CS_VOICE="$voice" \
+      "$DIR/tts-backend.sh" sapi-speak >/dev/null 2>&1 &
+    ;;
   *)
-    echo "claude-speak: no supported TTS backend found (need macOS \`say\` or Linux \`espeak-ng\`/\`espeak\`)" >&2
+    echo "claude-speak: no supported TTS backend found (need macOS \`say\`, Linux \`espeak-ng\`/\`espeak\`, or Windows PowerShell)" >&2
     exit 0
     ;;
 esac

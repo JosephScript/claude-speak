@@ -5,7 +5,7 @@
 
 Give Claude Code a voice. Hear responses read aloud on demand, or automatically after every turn — no API keys, no external services, just your OS's built-in speech engine.
 
-Works on **macOS** (`say`) and **Linux** (`espeak-ng`, or the older `espeak`). Windows isn't supported yet — see [Platform support](#platform-support).
+Works on **macOS** (`say`), **Linux** (`espeak-ng`, or the older `espeak`) and **Windows** (built-in SAPI voices, via Git Bash). See [Platform support](#platform-support).
 
 ## Why
 
@@ -64,15 +64,15 @@ Claude Code's dictation is controlled by its own `voice`/`voiceEnabled` settings
 |---|---|---|
 | macOS | `say` | Fully supported |
 | Linux (Arch, Debian, Ubuntu, etc.) | `espeak-ng` (falls back to `espeak`) | Fully supported — tested against real `espeak-ng` output in Docker (Arch's official image has no arm64 build; verified on Debian instead, which shares the same upstream `espeak-ng` binary and GNU coreutils) |
-| Windows | — | Not yet. Claude Code hooks run via PowerShell on Windows rather than bash, and Windows' TTS API (SAPI) uses a different rate scale — this would need a parallel implementation, not a patch to the existing scripts. |
+| Windows | SAPI (`System.Speech`) via `powershell.exe` | Supported from Git Bash (the shell Claude Code uses on Windows). Voices are the installed Microsoft ones, e.g. `Microsoft Zira Desktop`. SAPI's rate scale is -10 to 10, so `/speak-rate` converts words per minute at roughly 15 wpm per step around 180 wpm: approximate, not exact. Windows PowerShell 5.1 is enough; no script execution policy change is needed, because the helper runs inline rather than as a `.ps1` file. |
 
-Requirements: `jq`, `perl`, `bash`, and the platform's TTS backend (`say` is preinstalled on macOS; install espeak-ng with `pacman -S espeak-ng` on Arch or `apt install espeak-ng` on Debian/Ubuntu).
+Requirements: `jq`, `perl`, `bash`, and the platform's TTS backend (`say` is preinstalled on macOS; install espeak-ng with `pacman -S espeak-ng` on Arch or `apt install espeak-ng` on Debian/Ubuntu; on Windows, Git for Windows supplies `bash` and `perl`, SAPI voices are built in, and `winget install jqlang.jq` supplies `jq`).
 
 ## How it works
 
 - `/speak` (local mode) and the `/toggle-speak` Stop hook share one formatter (`scripts/speak-format.sh`): strip markdown noise, split code identifiers (`LC_ALL=C` → "LC ALL C", `toggleSpeakEnabled` → "toggle Speak Enabled") so the speech engine doesn't mangle them, and truncate at the last sentence boundary within the configured byte limit.
 - The Stop hook reads `last_assistant_message` directly from the hook's stdin JSON rather than the transcript file, since the transcript is written asynchronously and can lag. `/speak` has no such shortcut (it's a fresh command, not a hook), so it reads the transcript and waits for the file to go quiet before extracting text. Finding "the current transcript" and reading file size/mtime uses a small GNU/BSD `stat` compatibility shim (`scripts/speak-last-response.sh`), since those flags differ between Linux and macOS.
-- `scripts/tts-backend.sh` detects which speech engine is available (`say` on macOS, `espeak-ng`/`espeak` on Linux) and exposes backend-agnostic voice listing/validation. `scripts/speak-say.sh` is the single point that actually invokes it — applying rate/voice and launching it fully detached (own process group, not just a plain background job) so a hook's turn ending doesn't cut speech off mid-sentence.
+- `scripts/tts-backend.sh` detects which speech engine is available (`say` on macOS, `espeak-ng`/`espeak` on Linux, SAPI through `powershell.exe` on Windows) and exposes backend-agnostic voice listing/validation. `scripts/speak-say.sh` is the single point that actually invokes it — applying rate/voice and launching it fully detached (own process group, not just a plain background job) so a hook's turn ending doesn't cut speech off mid-sentence.
 
 ## Testing
 

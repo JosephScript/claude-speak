@@ -27,8 +27,24 @@ EOF
   [ "$status" -eq 0 ]
   case "$(uname -s)" in
     Darwin) [ "$output" = "macos" ] ;;
+    MINGW*|MSYS*|CYGWIN*) [ "$output" = "windows" ] ;;
     *) [ "$output" = "espeak" ] ;;
   esac
+}
+
+@test "detects the windows backend under Git Bash when powershell.exe is on PATH" {
+  cat > "$FAKE_BIN/uname" <<'EOF'
+#!/bin/bash
+echo "MINGW64_NT-10.0"
+EOF
+  cat > "$FAKE_BIN/powershell.exe" <<'EOF'
+#!/bin/bash
+EOF
+  chmod +x "$FAKE_BIN/uname" "$FAKE_BIN/powershell.exe"
+
+  run env PATH="$FAKE_BIN:$PATH" "$SCRIPTS_DIR/tts-backend.sh" detect
+  [ "$status" -eq 0 ]
+  [ "$output" = "windows" ]
 }
 
 @test "reports unsupported on an unrecognized OS" {
